@@ -113,14 +113,23 @@ let messageTimer = 0;
 // =========================
 
 function isCollidingWithTerminal(x, y) {
+function isCollidingWithObjects(x, y) {
+
     const half = player.size / 2;
 
-    return (
+    const terminalCollision =
         x + half > terminal.x &&
         x - half < terminal.x + terminal.width &&
         y + half > terminal.y &&
-        y - half < terminal.y + terminal.height
-    );
+        y - half < terminal.y + terminal.height;
+
+    const panelCollision =
+        x + half > powerPanel.x &&
+        x - half < powerPanel.x + powerPanel.width &&
+        y + half > powerPanel.y &&
+        y - half < powerPanel.y + powerPanel.height;
+
+    return terminalCollision || panelCollision;
 }
 
 function movePlayer(dx, dy) {
@@ -134,7 +143,7 @@ function movePlayer(dx, dy) {
     if (
         newX - half >= room.x &&
         newX + half <= room.x + room.width &&
-        !isCollidingWithTerminal(newX, player.y)
+        !isCollidingWithObjects(newX, player.y)
     ) {
         player.x = newX;
     }
@@ -142,7 +151,7 @@ function movePlayer(dx, dy) {
     if (
         newY - half >= room.y &&
         newY + half <= room.y + room.height &&
-        !isCollidingWithTerminal(player.x, newY)
+        !isCollidingWithObjects(player.x, newY)
     ) {
         player.y = newY;
     }
