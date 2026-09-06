@@ -19,6 +19,7 @@ const player = {
 const keys = {};
 
 window.addEventListener("keydown", (e) => {
+
     keys[e.key.toLowerCase()] = true;
 
     if (e.key.toLowerCase() === "e") {
@@ -27,6 +28,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 window.addEventListener("keyup", (e) => {
+
     keys[e.key.toLowerCase()] = false;
 });
 
@@ -42,22 +44,31 @@ const touch = {
 };
 
 function setupButton(id, direction) {
+
     const button = document.getElementById(id);
 
     if (!button) return;
 
     button.addEventListener("touchstart", (e) => {
+
         e.preventDefault();
+
         touch[direction] = true;
+
     }, { passive: false });
 
     button.addEventListener("touchend", (e) => {
+
         e.preventDefault();
+
         touch[direction] = false;
+
     }, { passive: false });
 
     button.addEventListener("touchcancel", () => {
+
         touch[direction] = false;
+
     });
 }
 
@@ -71,15 +82,27 @@ setupButton("right", "right");
 // =========================
 
 const room = {
+
     x: 40,
     y: 70,
+
     width: 0,
     height: 0
 };
 
 function updateRoom() {
-    room.width = canvas.width - 80;
-    room.height = canvas.height - 150;
+
+    room.width = Math.max(
+        180,
+        canvas.width - 80
+    );
+
+    room.height = Math.max(
+        200,
+        canvas.height - 150
+    );
+
+    updateObjectPositions();
 }
 
 // =========================
@@ -87,18 +110,54 @@ function updateRoom() {
 // =========================
 
 const terminal = {
-    x: 250,
-    y: 180,
+
+    x: 0,
+    y: 0,
+
     width: 45,
     height: 55
 };
 
 const powerPanel = {
-    x: 450,
-    y: 300,
+
+    x: 0,
+    y: 0,
+
     width: 50,
     height: 60
 };
+
+// =========================
+// OBJECT POSITIONS
+// =========================
+
+function updateObjectPositions() {
+
+    // Terminal
+    terminal.x =
+        room.x +
+        Math.min(
+            210,
+            Math.max(
+                30,
+                room.width - terminal.width - 120
+            )
+        );
+
+    terminal.y =
+        room.y + 110;
+
+
+    // Power Panel
+    powerPanel.x =
+        room.x +
+        room.width -
+        powerPanel.width -
+        40;
+
+    powerPanel.y =
+        room.y + 180;
+}
 
 // =========================
 // MESSAGE
@@ -112,13 +171,17 @@ let messageTimer = 0;
 // =========================
 
 function resizeCanvas() {
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
     updateRoom();
 }
 
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
 
 // =========================
 // COLLISION
@@ -126,21 +189,41 @@ window.addEventListener("resize", resizeCanvas);
 
 function isCollidingWithObjects(x, y) {
 
-    const half = player.size / 2;
+    const half =
+        player.size / 2;
 
+    // Terminal collision
     const terminalCollision =
+
         x + half > terminal.x &&
-        x - half < terminal.x + terminal.width &&
+        x - half <
+            terminal.x +
+            terminal.width &&
+
         y + half > terminal.y &&
-        y - half < terminal.y + terminal.height;
+        y - half <
+            terminal.y +
+            terminal.height;
 
+
+    // Power panel collision
     const panelCollision =
-        x + half > powerPanel.x &&
-        x - half < powerPanel.x + powerPanel.width &&
-        y + half > powerPanel.y &&
-        y - half < powerPanel.y + powerPanel.height;
 
-    return terminalCollision || panelCollision;
+        x + half > powerPanel.x &&
+        x - half <
+            powerPanel.x +
+            powerPanel.width &&
+
+        y + half > powerPanel.y &&
+        y - half <
+            powerPanel.y +
+            powerPanel.height;
+
+
+    return (
+        terminalCollision ||
+        panelCollision
+    );
 }
 
 // =========================
@@ -149,26 +232,58 @@ function isCollidingWithObjects(x, y) {
 
 function movePlayer(dx, dy) {
 
-    const half = player.size / 2;
+    const half =
+        player.size / 2;
 
-    const newX = player.x + dx;
-    const newY = player.y + dy;
+    const newX =
+        player.x + dx;
 
-    // Horizontal
+    const newY =
+        player.y + dy;
+
+
+    // =========================
+    // HORIZONTAL
+    // =========================
+
     if (
+
         newX - half >= room.x &&
-        newX + half <= room.x + room.width &&
-        !isCollidingWithObjects(newX, player.y)
+
+        newX + half <=
+            room.x +
+            room.width &&
+
+        !isCollidingWithObjects(
+            newX,
+            player.y
+        )
+
     ) {
+
         player.x = newX;
     }
 
-    // Vertical
+
+    // =========================
+    // VERTICAL
+    // =========================
+
     if (
+
         newY - half >= room.y &&
-        newY + half <= room.y + room.height &&
-        !isCollidingWithObjects(player.x, newY)
+
+        newY + half <=
+            room.y +
+            room.height &&
+
+        !isCollidingWithObjects(
+            player.x,
+            newY
+        )
+
     ) {
+
         player.y = newY;
     }
 }
@@ -180,13 +295,17 @@ function movePlayer(dx, dy) {
 function distanceToTerminal() {
 
     const centerX =
-        terminal.x + terminal.width / 2;
+        terminal.x +
+        terminal.width / 2;
 
     const centerY =
-        terminal.y + terminal.height / 2;
+        terminal.y +
+        terminal.height / 2;
 
     return Math.hypot(
+
         player.x - centerX,
+
         player.y - centerY
     );
 }
@@ -197,7 +316,9 @@ function distanceToTerminal() {
 
 function interact() {
 
-    if (distanceToTerminal() < 75) {
+    if (
+        distanceToTerminal() < 75
+    ) {
 
         message =
             "TERMINAL: POWER SYSTEM OFFLINE\n" +
@@ -207,15 +328,30 @@ function interact() {
     }
 }
 
+// =========================
+// INTERACT BUTTON
+// =========================
+
 const interactButton =
-    document.getElementById("interact");
+    document.getElementById(
+        "interact"
+    );
 
 if (interactButton) {
 
-    interactButton.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        interact();
-    }, { passive: false });
+    interactButton.addEventListener(
+        "touchstart",
+        (e) => {
+
+            e.preventDefault();
+
+            interact();
+
+        },
+        {
+            passive: false
+        }
+    );
 }
 
 // =========================
@@ -227,47 +363,97 @@ function update() {
     let dx = 0;
     let dy = 0;
 
+
+    // =========================
+    // UP
+    // =========================
+
     if (
+
         keys["w"] ||
         keys["arrowup"] ||
         touch.up
+
     ) {
+
         dy -= player.speed;
     }
 
+
+    // =========================
+    // DOWN
+    // =========================
+
     if (
+
         keys["s"] ||
         keys["arrowdown"] ||
         touch.down
+
     ) {
+
         dy += player.speed;
     }
 
+
+    // =========================
+    // LEFT
+    // =========================
+
     if (
+
         keys["a"] ||
         keys["arrowleft"] ||
         touch.left
+
     ) {
+
         dx -= player.speed;
     }
 
+
+    // =========================
+    // RIGHT
+    // =========================
+
     if (
+
         keys["d"] ||
         keys["arrowright"] ||
         touch.right
+
     ) {
+
         dx += player.speed;
     }
 
-    // Diagonal normalization
-    if (dx !== 0 && dy !== 0) {
+
+    // =========================
+    // DIAGONAL NORMALIZATION
+    // =========================
+
+    if (
+        dx !== 0 &&
+        dy !== 0
+    ) {
+
         dx *= 0.707;
         dy *= 0.707;
     }
 
-    movePlayer(dx, dy);
 
-    if (messageTimer > 0) {
+    // Move
+    movePlayer(
+        dx,
+        dy
+    );
+
+
+    // Message timer
+    if (
+        messageTimer > 0
+    ) {
+
         messageTimer--;
     }
 }
@@ -278,256 +464,419 @@ function update() {
 
 function draw() {
 
-    // Background
-    ctx.fillStyle = "#080a10";
+    // =========================
+    // BACKGROUND
+    // =========================
+
+    ctx.fillStyle =
+        "#080a10";
 
     ctx.fillRect(
+
         0,
         0,
+
         canvas.width,
         canvas.height
     );
+
 
     // =========================
     // ROOM
     // =========================
 
-    ctx.fillStyle = "#151923";
+    ctx.fillStyle =
+        "#151923";
 
     ctx.fillRect(
+
         room.x,
         room.y,
+
         room.width,
         room.height
     );
 
-    // Border
-    ctx.strokeStyle = "#454b5c";
+
+    // =========================
+    // ROOM BORDER
+    // =========================
+
+    ctx.strokeStyle =
+        "#454b5c";
+
     ctx.lineWidth = 4;
 
     ctx.strokeRect(
+
         room.x,
         room.y,
+
         room.width,
         room.height
     );
+
 
     // =========================
     // FLOOR GRID
     // =========================
 
-    ctx.strokeStyle = "#202532";
+    ctx.strokeStyle =
+        "#202532";
+
     ctx.lineWidth = 1;
 
+
+    // Vertical lines
     for (
-        let x = room.x + 40;
-        x < room.x + room.width;
+
+        let x =
+            room.x + 40;
+
+        x <
+            room.x +
+            room.width;
+
         x += 40
+
     ) {
 
         ctx.beginPath();
 
-        ctx.moveTo(x, room.y);
+        ctx.moveTo(
+            x,
+            room.y
+        );
 
         ctx.lineTo(
+
             x,
-            room.y + room.height
+
+            room.y +
+            room.height
         );
 
         ctx.stroke();
     }
 
+
+    // Horizontal lines
     for (
-        let y = room.y + 40;
-        y < room.y + room.height;
+
+        let y =
+            room.y + 40;
+
+        y <
+            room.y +
+            room.height;
+
         y += 40
+
     ) {
 
         ctx.beginPath();
 
-        ctx.moveTo(room.x, y);
+        ctx.moveTo(
+
+            room.x,
+            y
+        );
 
         ctx.lineTo(
-            room.x + room.width,
+
+            room.x +
+            room.width,
+
             y
         );
 
         ctx.stroke();
     }
 
+
     // =========================
     // ROOM TITLE
     // =========================
 
-    ctx.fillStyle = "#9da7bd";
-    ctx.font = "bold 14px Arial";
+    ctx.fillStyle =
+        "#9da7bd";
+
+    ctx.font =
+        "bold 14px Arial";
 
     ctx.fillText(
+
         "ASTRA-9 // DOCKING BAY",
+
         room.x + 15,
+
         room.y - 15
     );
+
 
     // =========================
     // TERMINAL
     // =========================
 
-    ctx.fillStyle = "#303747";
+    ctx.fillStyle =
+        "#303747";
 
     ctx.fillRect(
+
         terminal.x,
         terminal.y,
+
         terminal.width,
         terminal.height
     );
 
-    ctx.strokeStyle = "#69758d";
+
+    // Terminal border
+    ctx.strokeStyle =
+        "#69758d";
+
     ctx.lineWidth = 1;
 
     ctx.strokeRect(
+
         terminal.x,
         terminal.y,
+
         terminal.width,
         terminal.height
     );
 
-    // Screen
-    ctx.fillStyle = "#8ff0ff";
+
+    // Terminal screen
+    ctx.fillStyle =
+        "#8ff0ff";
 
     ctx.fillRect(
+
         terminal.x + 8,
+
         terminal.y + 8,
+
         terminal.width - 16,
+
         18
     );
 
-    // Label
-    ctx.fillStyle = "#aab4c8";
-    ctx.font = "11px Arial";
+
+    // Terminal label
+    ctx.fillStyle =
+        "#aab4c8";
+
+    ctx.font =
+        "11px Arial";
 
     ctx.fillText(
+
         "TERMINAL",
+
         terminal.x - 3,
-        terminal.y + terminal.height + 15
+
+        terminal.y +
+        terminal.height +
+        15
     );
+
 
     // =========================
     // POWER PANEL
     // =========================
 
-    ctx.fillStyle = "#252b38";
+    ctx.fillStyle =
+        "#252b38";
 
     ctx.fillRect(
+
         powerPanel.x,
         powerPanel.y,
+
         powerPanel.width,
         powerPanel.height
     );
 
-    ctx.strokeStyle = "#69758d";
+
+    // Panel border
+    ctx.strokeStyle =
+        "#69758d";
+
+    ctx.lineWidth = 2;
 
     ctx.strokeRect(
+
         powerPanel.x,
         powerPanel.y,
+
         powerPanel.width,
         powerPanel.height
     );
 
-    // Power light
-    ctx.fillStyle = "#ffcc66";
+
+    // =========================
+    // POWER LIGHT
+    // =========================
+
+    ctx.fillStyle =
+        "#ffcc66";
 
     ctx.fillRect(
+
         powerPanel.x + 10,
+
         powerPanel.y + 10,
+
         12,
         12
     );
 
-    // Label
-    ctx.fillStyle = "#aab4c8";
-    ctx.font = "10px Arial";
+
+    // =========================
+    // POWER LABEL
+    // =========================
+
+    ctx.fillStyle =
+        "#aab4c8";
+
+    ctx.font =
+        "10px Arial";
 
     ctx.fillText(
+
         "POWER",
+
         powerPanel.x + 3,
-        powerPanel.y + powerPanel.height + 14
+
+        powerPanel.y +
+        powerPanel.height +
+        14
     );
+
 
     // =========================
     // PLAYER
     // =========================
 
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle =
+        "#ffffff";
 
     ctx.fillRect(
-        player.x - player.size / 2,
-        player.y - player.size / 2,
+
+        player.x -
+            player.size / 2,
+
+        player.y -
+            player.size / 2,
+
         player.size,
         player.size
     );
+
 
     // =========================
     // INTERACTION HINT
     // =========================
 
-    if (distanceToTerminal() < 75) {
+    if (
+        distanceToTerminal() < 75
+    ) {
 
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 13px Arial";
+        ctx.fillStyle =
+            "#ffffff";
+
+        ctx.font =
+            "bold 13px Arial";
 
         ctx.fillText(
+
             "[ E ] INTERACT",
+
             player.x - 45,
+
             player.y - 25
         );
     }
+
 
     // =========================
     // MESSAGE
     // =========================
 
-    if (messageTimer > 0) {
+    if (
+        messageTimer > 0
+    ) {
 
         const boxWidth =
-            Math.min(canvas.width - 40, 520);
+            Math.min(
+                canvas.width - 40,
+                520
+            );
 
         const boxX =
-            (canvas.width - boxWidth) / 2;
+            (canvas.width -
+                boxWidth) / 2;
 
         const boxY =
             canvas.height - 125;
 
-        ctx.fillStyle = "rgba(0,0,0,0.88)";
+
+        // Message background
+        ctx.fillStyle =
+            "rgba(0,0,0,0.88)";
 
         ctx.fillRect(
+
             boxX,
             boxY,
+
             boxWidth,
             80
         );
 
-        ctx.strokeStyle = "#69758d";
+
+        // Message border
+        ctx.strokeStyle =
+            "#69758d";
 
         ctx.strokeRect(
+
             boxX,
             boxY,
+
             boxWidth,
             80
         );
 
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "14px Arial";
 
-        const lines = message.split("\n");
+        // Message text
+        ctx.fillStyle =
+            "#ffffff";
 
-        lines.forEach((line, index) => {
+        ctx.font =
+            "14px Arial";
 
-            ctx.fillText(
-                line,
-                boxX + 18,
-                boxY + 28 + index * 22
-            );
-        });
+
+        const lines =
+            message.split("\n");
+
+
+        lines.forEach(
+            (line, index) => {
+
+                ctx.fillText(
+
+                    line,
+
+                    boxX + 18,
+
+                    boxY +
+                    28 +
+                    index * 22
+                );
+            }
+        );
     }
 }
 
@@ -538,9 +887,12 @@ function draw() {
 function gameLoop() {
 
     update();
+
     draw();
 
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(
+        gameLoop
+    );
 }
 
 // =========================
@@ -548,4 +900,5 @@ function gameLoop() {
 // =========================
 
 resizeCanvas();
+
 gameLoop();
