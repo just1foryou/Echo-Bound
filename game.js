@@ -1,6 +1,15 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+const player = {
+    x: 150,
+    y: 250,
+    size: 30,
+    speed: 4
+};
+
+const keys = {};
+
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -9,42 +18,67 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
-const player = {
-    x: canvas.width / 2,
-    y: canvas.height / 2 + 100,
-    size: 30,
-    speed: 5
+// Keyboard controls
+window.addEventListener("keydown", (e) => {
+    keys[e.key.toLowerCase()] = true;
+});
+
+window.addEventListener("keyup", (e) => {
+    keys[e.key.toLowerCase()] = false;
+});
+
+// Touch buttons
+const touch = {
+    up: false,
+    down: false,
+    left: false,
+    right: false
 };
 
-const keys = {};
+function setupButton(id, direction) {
+    const button = document.getElementById(id);
 
-window.addEventListener("keydown", (event) => {
-    keys[event.key.toLowerCase()] = true;
-});
+    if (!button) return;
 
-window.addEventListener("keyup", (event) => {
-    keys[event.key.toLowerCase()] = false;
-});
+    button.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        touch[direction] = true;
+    });
+
+    button.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        touch[direction] = false;
+    });
+
+    button.addEventListener("touchcancel", () => {
+        touch[direction] = false;
+    });
+}
+
+setupButton("up", "up");
+setupButton("down", "down");
+setupButton("left", "left");
+setupButton("right", "right");
 
 function update() {
 
-    if (keys["w"] || keys["arrowup"]) {
+    if (keys["w"] || keys["arrowup"] || touch.up) {
         player.y -= player.speed;
     }
 
-    if (keys["s"] || keys["arrowdown"]) {
+    if (keys["s"] || keys["arrowdown"] || touch.down) {
         player.y += player.speed;
     }
 
-    if (keys["a"] || keys["arrowleft"]) {
+    if (keys["a"] || keys["arrowleft"] || touch.left) {
         player.x -= player.speed;
     }
 
-    if (keys["d"] || keys["arrowright"]) {
+    if (keys["d"] || keys["arrowright"] || touch.right) {
         player.x += player.speed;
     }
 
-    // Keep player inside the screen
+    // Screen boundaries
     player.x = Math.max(
         player.size / 2,
         Math.min(canvas.width - player.size / 2, player.x)
@@ -57,10 +91,6 @@ function update() {
 }
 
 function draw() {
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Background
     ctx.fillStyle = "#11121a";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -78,7 +108,6 @@ function draw() {
 function gameLoop() {
     update();
     draw();
-
     requestAnimationFrame(gameLoop);
 }
 
