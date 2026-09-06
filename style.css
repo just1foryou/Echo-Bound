@@ -134,10 +134,30 @@ body {
 
 /* Interact */
 #interact {
-    width: 90px !important;
-    height: 38px !important;
-    margin-top: 8px;
+    position: fixed;
+    right: 20px;
+    bottom: 30px;
 
-    font-size: 11px !important;
+    width: 100px;
+    height: 45px;
+
+    border: 2px solid white;
+    border-radius: 10px;
+
+    background: rgba(20, 20, 30, 0.9);
+    color: white;
+
+    font-size: 12px;
+    font-weight: bold;
     letter-spacing: 1px;
+
+    z-index: 99999;
+
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#interact:active {
+    transform: scale(0.92);
 }
