@@ -1,6 +1,10 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+// =========================
+// PLAYER
+// =========================
+
 const player = {
     x: 120,
     y: 300,
@@ -8,19 +12,11 @@ const player = {
     speed: 4
 };
 
+// =========================
+// INPUT
+// =========================
+
 const keys = {};
-
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
-
-// =========================
-// KEYBOARD
-// =========================
 
 window.addEventListener("keydown", (e) => {
     keys[e.key.toLowerCase()] = true;
@@ -49,12 +45,12 @@ function setupButton(id, direction) {
     button.addEventListener("touchstart", (e) => {
         e.preventDefault();
         touch[direction] = true;
-    });
+    }, { passive: false });
 
     button.addEventListener("touchend", (e) => {
         e.preventDefault();
         touch[direction] = false;
-    });
+    }, { passive: false });
 
     button.addEventListener("touchcancel", () => {
         touch[direction] = false;
@@ -65,6 +61,19 @@ setupButton("up", "up");
 setupButton("down", "down");
 setupButton("left", "left");
 setupButton("right", "right");
+
+// =========================
+// CANVAS
+// =========================
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    updateRoom();
+}
+
+window.addEventListener("resize", resizeCanvas);
 
 // =========================
 // ROOM
@@ -78,15 +87,12 @@ const room = {
 };
 
 function updateRoom() {
-    room.width = canvas.width - 80;
-    room.height = canvas.height - 150;
+    room.width = Math.max(100, canvas.width - 80);
+    room.height = Math.max(100, canvas.height - 150);
 }
 
-updateRoom();
-window.addEventListener("resize", updateRoom);
-
 // =========================
-// TERMINAL
+// OBJECTS
 // =========================
 
 const terminal = {
@@ -104,6 +110,10 @@ const powerPanel = {
     height: 60,
     active: true
 };
+
+// =========================
+// MESSAGE
+// =========================
 
 let message = "";
 let messageTimer = 0;
@@ -131,14 +141,18 @@ function isCollidingWithObjects(x, y) {
     return terminalCollision || panelCollision;
 }
 
+// =========================
+// PLAYER MOVEMENT
+// =========================
+
 function movePlayer(dx, dy) {
+
+    const half = player.size / 2;
 
     const newX = player.x + dx;
     const newY = player.y + dy;
 
-    // Room boundaries
-    const half = player.size / 2;
-
+    // Horizontal movement
     if (
         newX - half >= room.x &&
         newX + half <= room.x + room.width &&
@@ -147,26 +161,7 @@ function movePlayer(dx, dy) {
         player.x = newX;
     }
 
-    if (
-        newY - half >= room.y &&
-        newY + half <= room.y + room.height &&
-        !isCollidingWithObjects(player.x, newY)
-    ) {
-        player.y = newY;
-    }
-}
-
-    // Room boundaries
-    const half = player.size / 2;
-
-    if (
-        newX - half >= room.x &&
-        newX + half <= room.x + room.width &&
-        !isCollidingWithObjects(newX, player.y)
-    ) {
-        player.x = newX;
-    }
-
+    // Vertical movement
     if (
         newY - half >= room.y &&
         newY + half <= room.y + room.height &&
@@ -177,19 +172,26 @@ function movePlayer(dx, dy) {
 }
 
 // =========================
-// INTERACTION
+// TERMINAL DISTANCE
 // =========================
 
 function distanceToTerminal() {
 
-    const centerX = terminal.x + terminal.width / 2;
-    const centerY = terminal.y + terminal.height / 2;
+    const centerX =
+        terminal.x + terminal.width / 2;
+
+    const centerY =
+        terminal.y + terminal.height / 2;
 
     return Math.hypot(
         player.x - centerX,
         player.y - centerY
     );
 }
+
+// =========================
+// INTERACTION
+// =========================
 
 function interact() {
 
@@ -211,13 +213,15 @@ window.addEventListener("keydown", (e) => {
 
 });
 
-const interactButton = document.getElementById("interact");
+const interactButton =
+    document.getElementById("interact");
 
 if (interactButton) {
+
     interactButton.addEventListener("touchstart", (e) => {
         e.preventDefault();
         interact();
-    });
+    }, { passive: false });
 }
 
 // =========================
@@ -229,19 +233,35 @@ function update() {
     let dx = 0;
     let dy = 0;
 
-    if (keys["w"] || keys["arrowup"] || touch.up) {
+    if (
+        keys["w"] ||
+        keys["arrowup"] ||
+        touch.up
+    ) {
         dy -= player.speed;
     }
 
-    if (keys["s"] || keys["arrowdown"] || touch.down) {
+    if (
+        keys["s"] ||
+        keys["arrowdown"] ||
+        touch.down
+    ) {
         dy += player.speed;
     }
 
-    if (keys["a"] || keys["arrowleft"] || touch.left) {
+    if (
+        keys["a"] ||
+        keys["arrowleft"] ||
+        touch.left
+    ) {
         dx -= player.speed;
     }
 
-    if (keys["d"] || keys["arrowright"] || touch.right) {
+    if (
+        keys["d"] ||
+        keys["arrowright"] ||
+        touch.right
+    ) {
         dx += player.speed;
     }
 
@@ -266,10 +286,19 @@ function draw() {
 
     // Background
     ctx.fillStyle = "#080a10";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
-    // Room
+    // =========================
+    // ROOM
+    // =========================
+
     ctx.fillStyle = "#151923";
+
     ctx.fillRect(
         room.x,
         room.y,
@@ -288,7 +317,10 @@ function draw() {
         room.height
     );
 
-    // Floor grid
+    // =========================
+    // FLOOR GRID
+    // =========================
+
     ctx.strokeStyle = "#202532";
     ctx.lineWidth = 1;
 
@@ -297,9 +329,15 @@ function draw() {
         x < room.x + room.width;
         x += 40
     ) {
+
         ctx.beginPath();
+
         ctx.moveTo(x, room.y);
-        ctx.lineTo(x, room.y + room.height);
+        ctx.lineTo(
+            x,
+            room.y + room.height
+        );
+
         ctx.stroke();
     }
 
@@ -308,22 +346,35 @@ function draw() {
         y < room.y + room.height;
         y += 40
     ) {
+
         ctx.beginPath();
+
         ctx.moveTo(room.x, y);
-        ctx.lineTo(room.x + room.width, y);
+        ctx.lineTo(
+            room.x + room.width,
+            y
+        );
+
         ctx.stroke();
     }
 
-    // Room title
+    // =========================
+    // ROOM TITLE
+    // =========================
+
     ctx.fillStyle = "#9da7bd";
     ctx.font = "bold 14px Arial";
+
     ctx.fillText(
         "ASTRA-9 // DOCKING BAY",
         room.x + 15,
         room.y - 15
     );
 
-    // Terminal
+    // =========================
+    // TERMINAL
+    // =========================
+
     ctx.fillStyle = "#303747";
 
     ctx.fillRect(
@@ -334,6 +385,8 @@ function draw() {
     );
 
     ctx.strokeStyle = "#69758d";
+    ctx.lineWidth = 1;
+
     ctx.strokeRect(
         terminal.x,
         terminal.y,
@@ -361,7 +414,52 @@ function draw() {
         terminal.y + terminal.height + 15
     );
 
-    // Player
+    // =========================
+    // POWER PANEL
+    // =========================
+
+    ctx.fillStyle = "#252b38";
+
+    ctx.fillRect(
+        powerPanel.x,
+        powerPanel.y,
+        powerPanel.width,
+        powerPanel.height
+    );
+
+    ctx.strokeStyle = "#69758d";
+
+    ctx.strokeRect(
+        powerPanel.x,
+        powerPanel.y,
+        powerPanel.width,
+        powerPanel.height
+    );
+
+    // Panel light
+    ctx.fillStyle = "#ffcc66";
+
+    ctx.fillRect(
+        powerPanel.x + 10,
+        powerPanel.y + 10,
+        12,
+        12
+    );
+
+    // Panel label
+    ctx.fillStyle = "#aab4c8";
+    ctx.font = "10px Arial";
+
+    ctx.fillText(
+        "POWER",
+        powerPanel.x + 3,
+        powerPanel.y + powerPanel.height + 14
+    );
+
+    // =========================
+    // PLAYER
+    // =========================
+
     ctx.fillStyle = "#ffffff";
 
     ctx.fillRect(
@@ -371,7 +469,10 @@ function draw() {
         player.size
     );
 
-    // Interaction hint
+    // =========================
+    // INTERACTION HINT
+    // =========================
+
     if (distanceToTerminal() < 75) {
 
         ctx.fillStyle = "#ffffff";
@@ -384,7 +485,10 @@ function draw() {
         );
     }
 
-    // Message box
+    // =========================
+    // MESSAGE BOX
+    // =========================
+
     if (messageTimer > 0) {
 
         const boxWidth = Math.min(
@@ -408,6 +512,7 @@ function draw() {
         );
 
         ctx.strokeStyle = "#69758d";
+
         ctx.strokeRect(
             boxX,
             boxY,
@@ -433,8 +538,11 @@ function draw() {
 }
 
 // =========================
-// GAME LOOP
+// START GAME
 // =========================
+
+resizeCanvas();
+gameLoop();
 
 function gameLoop() {
 
@@ -443,5 +551,3 @@ function gameLoop() {
 
     requestAnimationFrame(gameLoop);
 }
-
-gameLoop();
