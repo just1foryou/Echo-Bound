@@ -112,7 +112,6 @@ let messageTimer = 0;
 // COLLISION
 // =========================
 
-function isCollidingWithTerminal(x, y) {
 function isCollidingWithObjects(x, y) {
 
     const half = player.size / 2;
@@ -136,6 +135,26 @@ function movePlayer(dx, dy) {
 
     const newX = player.x + dx;
     const newY = player.y + dy;
+
+    // Room boundaries
+    const half = player.size / 2;
+
+    if (
+        newX - half >= room.x &&
+        newX + half <= room.x + room.width &&
+        !isCollidingWithObjects(newX, player.y)
+    ) {
+        player.x = newX;
+    }
+
+    if (
+        newY - half >= room.y &&
+        newY + half <= room.y + room.height &&
+        !isCollidingWithObjects(player.x, newY)
+    ) {
+        player.y = newY;
+    }
+}
 
     // Room boundaries
     const half = player.size / 2;
