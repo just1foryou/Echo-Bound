@@ -131,3 +131,13 @@ body {
         bottom: 20px;
     }
 }
+
+/* Interact */
+#interact {
+    width: 90px !important;
+    height: 38px !important;
+    margin-top: 8px;
+
+    font-size: 11px !important;
+    letter-spacing: 1px;
+}
