@@ -97,6 +97,14 @@ const terminal = {
     active: true
 };
 
+const powerPanel = {
+    x: 450,
+    y: 300,
+    width: 50,
+    height: 60,
+    active: true
+};
+
 let message = "";
 let messageTimer = 0;
 
