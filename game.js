@@ -175,6 +175,15 @@ window.addEventListener("keydown", (e) => {
 
 });
 
+const interactButton = document.getElementById("interact");
+
+if (interactButton) {
+    interactButton.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        interact();
+    });
+}
+
 // =========================
 // UPDATE
 // =========================
